@@ -2,7 +2,7 @@
 
 Play your voice every x seconds.
 
-[DEMO](https://htmlpreview.github.io/?https://github.com/vdegenne/raisonance/blob/master/public/index.html)
+[TRY IT](https://htmlpreview.github.io/?https://github.com/vdegenne/raisonance/blob/master/public/index.html)
 
 
 ## Installation
