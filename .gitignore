@@ -1,4 +1,3 @@
 node_modules
 !public/node_modules
 es-dev-server.config.js
-public/app.js

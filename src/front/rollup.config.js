@@ -12,7 +12,7 @@ const bundle = process.env.bundle || false;
 
 export default {
   input: 'src/front/app.ts',
-  output: {file: 'public/app.js', format: 'esm'},
+  output: {file: 'public/app.js', format: 'iife'},
   plugins:
       [
         bundle ? nodeResolve() : {},
