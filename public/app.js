@@ -6216,7 +6216,6 @@ let AppContainer = class AppContainer extends s$1 {
             this._playingLoop = true;
             while (this._playingLoop) {
                 // Picking a random voice strip
-                console.log(this.voiceStrips);
                 const strip = this.voiceStrips[Math.floor(Math.random() * this.voiceStrips.length)];
                 await strip.play();
                 await new Promise(resolve => setTimeout(resolve, 5000));
