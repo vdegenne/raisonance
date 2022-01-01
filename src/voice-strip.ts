@@ -10,6 +10,8 @@ export class VoiceStrip extends LitElement {
   @property({ type: Object })
   private voice?: Voice;
 
+  private PlayEndedPromise?: Promise<void>;
+
   static styles = css`
   :host {
     display: flex;
@@ -72,20 +74,29 @@ export class VoiceStrip extends LitElement {
   }
 
   public play () {
+    // We can use this promise on the front
+    // to execute something else when the playing ends
+    let resolve: () => void;
+    this.PlayEndedPromise = new Promise(_resolve => resolve = _resolve)
+
+    this.audio.onended = () => {
+      this.stop()
+      resolve()
+    }
+
     this.audio.play()
     this._playing = true
 
-    return new Promise(resolve => {
-      this.audio.onended = () => {
-        this.stop()
-        resolve(null)
-      }
-    })
+    return this.PlayEndedPromise;
   }
   public stop () {
     this.audio.pause()
     this.audio.currentTime = 0
     this._playing = false
+  }
+
+  public get playEnded () {
+    return this.PlayEndedPromise;
   }
 
   get audio () {

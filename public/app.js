@@ -6125,19 +6125,25 @@ let VoiceStrip = class VoiceStrip extends s$1 {
         }
     }
     play() {
+        // We can use this promise on the front
+        // to execute something else when the playing ends
+        let resolve;
+        this.PlayEndedPromise = new Promise(_resolve => resolve = _resolve);
+        this.audio.onended = () => {
+            this.stop();
+            resolve();
+        };
         this.audio.play();
         this._playing = true;
-        return new Promise(resolve => {
-            this.audio.onended = () => {
-                this.stop();
-                resolve(null);
-            };
-        });
+        return this.PlayEndedPromise;
     }
     stop() {
         this.audio.pause();
         this.audio.currentTime = 0;
         this._playing = false;
+    }
+    get playEnded() {
+        return this.PlayEndedPromise;
     }
     get audio() {
         return window.audiosManager.getVoiceAudio(this.voice);
@@ -6166,6 +6172,7 @@ VoiceStrip = __decorate([
 let AppContainer = class AppContainer extends s$1 {
     constructor() {
         super();
+        this._playingLoop = false;
         window.app = this;
         // window.dataManager = this.dataManager = new DataManager;
         window.addEventListener('hashchange', () => {
@@ -6179,6 +6186,9 @@ let AppContainer = class AppContainer extends s$1 {
             window.location.hash = `c=${c.name}`;
             return p `
       <header style="padding:10px;background-color:grey">${c.name}</header>
+
+      <mwc-button outlined icon="loop"
+        @click=${() => this.onLoopButtonClick()}>loop</mwc-button>
       ${c.voices.map(v => {
                 return p `
         <voice-strip .voice=${v}></voice-strip>
@@ -6200,6 +6210,21 @@ let AppContainer = class AppContainer extends s$1 {
         @click=${() => this.navigateTo(c)}>${c.name}</div>`;
         })}
     `;
+    }
+    async onLoopButtonClick() {
+        if (!this._playingLoop) {
+            this._playingLoop = true;
+            while (this._playingLoop) {
+                // Picking a random voice strip
+                console.log(this.voiceStrips);
+                const strip = this.voiceStrips[Math.floor(Math.random() * this.voiceStrips.length)];
+                await strip.play();
+                await new Promise(resolve => setTimeout(resolve, 5000));
+            }
+        }
+        else {
+            this._playingLoop = false;
+        }
     }
     async editSpeech(voice) {
         try {

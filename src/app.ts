@@ -52,6 +52,9 @@ export class AppContainer extends LitElement {
       window.location.hash = `c=${c.name}`
       return html`
       <header style="padding:10px;background-color:grey">${c.name}</header>
+
+      <mwc-button outlined icon="loop"
+        @click=${() => this.onLoopButtonClick()}>loop</mwc-button>
       ${c.voices.map(v => {
         return html`
         <voice-strip .voice=${v}></voice-strip>
@@ -74,6 +77,23 @@ export class AppContainer extends LitElement {
         @click=${() => this.navigateTo(c)}>${c.name}</div>`
     })}
     `
+  }
+
+  private _playingLoop = false
+  private async onLoopButtonClick() {
+    if (!this._playingLoop) {
+      this._playingLoop = true
+      while (this._playingLoop) {
+        // Picking a random voice strip
+        console.log(this.voiceStrips)
+        const strip = this.voiceStrips[Math.floor(Math.random() * this.voiceStrips.length)]
+        await strip.play()
+        await new Promise(resolve => setTimeout(resolve, 5000))
+      }
+    }
+    else {
+      this._playingLoop = false
+    }
   }
 
   public async editSpeech (voice: Voice) {
