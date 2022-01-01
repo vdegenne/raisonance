@@ -2,9 +2,14 @@
 
 Play your voice every x seconds.
 
-[TRY IT](https://htmlpreview.github.io/?https://github.com/vdegenne/raisonance/blob/master/public/index.html)
+This is a local application
 
 
 ## Installation
 
-Open the plain html file located in `public/index.html` into your favorite browser.
+```bash
+npm i
+node server.js
+```
+
+and visit `http://localhost:8800/`
