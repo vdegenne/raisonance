@@ -1,24 +1,27 @@
 {
   "dependencies": {
-    "@material/mwc-button": "^0.12.0",
-    "@material/mwc-textfield": "^0.12.0",
-    "lit-element": "^2.2.1"
-  },
-  "devDependencies": {
-    "@types/dom-mediacapture-record": "^1.0.2",
-    "@types/node": "^13.5.0",
-    "clang-format": "^1.3.0",
-    "es-dev-server": "^1.36.2",
-    "koa": "^2.11.0",
-    "koa-router": "^7.4.0",
-    "rollup": "^1.29.0",
-    "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-terser": "^5.2.0",
-    "rollup-plugin-typescript": "^1.0.1",
-    "typescript": "^3.7.4"
+    "koa": "^2.13.4",
+    "koa-body": "^4.2.0",
+    "koa-router": "^10.1.1",
+    "koa-static": "^5.0.0"
   },
   "scripts": {
     "build": "rollup -c --environment minify,bundle",
-    "watch": "rollup -cw"
+    "watch": "rollup -cw",
+    "watch:server": "echo server.js | entr -r node server.js",
+    "browser-sync": "browser-sync start --proxy http://localhost:8800/ --files public/app.js --no-notify"
+  },
+  "devDependencies": {
+    "@material/mwc-button": "^0.25.3",
+    "@material/mwc-dialog": "^0.25.3",
+    "@material/mwc-icon-button": "^0.25.3",
+    "@material/mwc-textfield": "^0.25.3",
+    "@rollup/plugin-node-resolve": "^13.1.2",
+    "@rollup/plugin-typescript": "^8.3.0",
+    "browser-sync": "^2.27.7",
+    "lit": "^2.0.2",
+    "rollup": "^2.62.0",
+    "tslib": "^2.3.1",
+    "typescript": "^4.5.4"
   }
 }
