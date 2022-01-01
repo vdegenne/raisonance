@@ -3,7 +3,7 @@ import { customElement, queryAll, state } from 'lit/decorators.js'
 import '@material/mwc-button';
 import './DataManager'
 import { DataManager } from './DataManager';
-import { Collection } from './types';
+import { Collection, Voice } from './types';
 import './AudiosManager'
 import './audio-recorder'
 import './voice-strip'
@@ -76,21 +76,41 @@ export class AppContainer extends LitElement {
     `
   }
 
-  private async onAddSpeechClick() {
-    // Construct a new speech
-    const voice = window.dataManager.addVoice(this.collection!)
+  public async editSpeech (voice: Voice) {
     try {
       await window.audioRecorder.open(voice)
       // Save the informations remotely
       window.dataManager.saveRemote()
-      // We also need to save the file
-      await window.audiosManager.sendVoiceAudio(voice, window.audioRecorder.blob!)
+      // We also need to save the file if there is a record
+      if (window.audioRecorder.blob)
+        await window.audiosManager.sendVoiceAudio(voice, window.audioRecorder.blob)
       window.audiosManager.loadVoice(voice)
     }
     catch (e) {
-      console.log('cancel')
+      throw e
     }
-    this.requestUpdate()
+    // this.requestUpdate()
+  }
+
+  private async onAddSpeechClick() {
+    // Construct a new speech
+    // Or reuse if there is one in the recorder form
+    let voice
+    if (window.audioRecorder.voice) {
+      voice = window.dataManager.addVoice(this.collection!, window.audioRecorder.voice)
+    }
+    else {
+      voice = window.dataManager.addVoice(this.collection!)
+    }
+
+    try {
+      await this.editSpeech(voice)
+      window.audioRecorder.reset()
+      this.requestUpdate()
+    }
+    catch (e) {
+      window.dataManager.removeVoice(voice)
+    }
   }
 
   public processLocation() {

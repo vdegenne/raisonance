@@ -28,9 +28,21 @@ export class VoiceStrip extends LitElement {
     <mwc-icon-button icon=${!this._playing ? 'play_arrow' : 'stop'}
       @click=${() => this.togglePlay()}></mwc-icon-button>
     <span style="padding-left:12px;flex:1;">${this.voice?.title}</span>
+    <mwc-icon-button icon="edit"
+      @click=${() => this.onEditClick()}></mwc-icon-button>
     <mwc-icon-button icon="delete"
       @click=${() => this.onDeleteClick()}></mwc-icon-button>
     `
+  }
+
+  private async onEditClick() {
+    try {
+      await window.app.editSpeech(this.voice!)
+      this.requestUpdate()
+    }
+    catch (e) {
+
+    }
   }
 
   private onDeleteClick() {
@@ -38,8 +50,16 @@ export class VoiceStrip extends LitElement {
     if (confirmed) {
       window.dataManager.removeVoice(this.voice!)
       window.dataManager.saveRemote()
+      // Needa delete the remote audio file as well
+      window.audiosManager.removeVoiceAudio(this.voice!)
       window.app.requestUpdate()
     }
+  }
+
+  protected updated(_changedProperties: Map<string | number | symbol, unknown>): void {
+      // this.audio.onended = () => {
+      //   this.stop()
+      // }
   }
 
   private togglePlay() {
@@ -54,6 +74,13 @@ export class VoiceStrip extends LitElement {
   public play () {
     this.audio.play()
     this._playing = true
+
+    return new Promise(resolve => {
+      this.audio.onended = () => {
+        this.stop()
+        resolve(null)
+      }
+    })
   }
   public stop () {
     this.audio.pause()

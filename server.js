@@ -2,7 +2,7 @@ const Koa = require('koa')
 const Router = require('koa-router')
 const koaStatic = require('koa-static')
 const koaBody = require('koa-body')
-const {writeFileSync, copyFileSync} = require('fs')
+const {writeFileSync, copyFileSync, unlinkSync} = require('fs')
 
 const app = new Koa
 const router = new Router
@@ -17,6 +17,11 @@ router.put('/data', function (ctx) {
 
 router.post('/audio/:voiceId', function (ctx) {
   copyFileSync(ctx.request.files.audio.path, `public/audios/${ctx.params.voiceId}.wav`)
+  ctx.body = ''
+})
+
+router.delete('/audio/:voiceId', function (ctx) {
+  unlinkSync(`public/audios/${ctx.params.voiceId}.wav`)
   ctx.body = ''
 })
 

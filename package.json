@@ -9,7 +9,7 @@
     "build": "rollup -c --environment minify,bundle",
     "watch": "rollup -cw",
     "watch:server": "echo server.js | entr -r node server.js",
-    "browser-sync": "browser-sync start --proxy http://localhost:8800/ --files public/app.js --no-notify"
+    "browser-sync": "browser-sync start --proxy http://localhost:8800/ --files public/app.js --no-notify --https"
   },
   "devDependencies": {
     "@material/mwc-button": "^0.25.3",

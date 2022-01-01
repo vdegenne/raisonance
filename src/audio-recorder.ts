@@ -1,11 +1,13 @@
 import { LitElement, html, css, nothing } from 'lit';
-import { Dialog } from '@material/mwc-dialog';
 import { customElement, query, state } from 'lit/decorators.js';
+import { live } from 'lit/directives/live.js'
+import { Dialog } from '@material/mwc-dialog';
 import '@material/mwc-dialog'
 import '@material/mwc-button'
 import '@material/mwc-icon-button'
 import '@material/mwc-textfield'
 import { Voice } from './types';
+import { TextField } from '@material/mwc-textfield';
 
 declare global {
   interface Window {
@@ -18,7 +20,7 @@ export class AudioRecorder extends LitElement {
   @state()
   private recording = false;
   @state()
-  private voice?: Voice;
+  public voice?: Voice;
   @state()
   private audioUrl?: string;
 
@@ -30,6 +32,7 @@ export class AudioRecorder extends LitElement {
   private _blob?: Blob;
 
   @query('mwc-dialog') dialog!: Dialog;
+  @query('mwc-textfield[label=title]') titleField!: TextField;
 
   static styles = css`
   mwc-textfield {
@@ -40,13 +43,13 @@ export class AudioRecorder extends LitElement {
   render() {
     return html`
     <mwc-dialog heading="Record voice" escapeKeyAction="" scrimClickAction="">
-      <mwc-textfield label="title" value=${this.voice?.title!}
-        @keyup=${e => this.voice!.title = e.target.value}></mwc-textfield>
+      <mwc-textfield label="title" value=${live(this.voice?.title!)}
+        @click=${(e) => { if (e.target.value === 'Untitled Audio') e.target.select() }}></mwc-textfield>
+
       <div style="text-align:center">
         <mwc-icon-button icon=${!this.recording ? 'mic' : 'fiber_manual_record'}
           style="color:${!this.recording ? 'black' : 'red'};--mdc-icon-size:44px;--mdc-icon-button-size:72px;margin:24px;"
-          @click=${() => this.toggleRecording()}
-          dialogInitialFocus></mwc-icon-button>
+          @click=${() => this.toggleRecording()}></mwc-icon-button>
 
         ${this.audioUrl ? html`
         <audio src=${this.audioUrl} controls style="display:block;margin-top:18px"></audio>
@@ -57,7 +60,7 @@ export class AudioRecorder extends LitElement {
         @click=${() => this.onDialogDismiss()}>cancel</mwc-button>
       <mwc-button unelevated slot="primaryAction"
         ?disabled=${!this.audioUrl}
-        @click=${() => this.onDialogAccept()}>add</mwc-button>
+        @click=${() => this.onDialogAccept()}>save</mwc-button>
     </mwc-dialog>
     `
   }
@@ -66,16 +69,16 @@ export class AudioRecorder extends LitElement {
     // Reset before closing
     this.dialog.close()
     this._reject!()
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // this.reset()
+    // await new Promise(resolve => setTimeout(resolve, 500))
     if (this._mediaRecorder && this._mediaRecorder.state === 'recording') {
       this._mediaRecorder.stop()
     }
-    this.reset()
   }
 
   private onDialogAccept() {
     // We should send the file to the back
-
+    this.voice!.title = this.titleField.value;
     this.dialog.close()
     this._resolve!(this.voice)
   }
@@ -113,6 +116,10 @@ export class AudioRecorder extends LitElement {
 
   public open (voice: Voice) {
     this.voice = voice;
+    // Trying to find the audio
+    const audio = window.audiosManager.getVoiceAudio(voice)
+    audio && (this.audioUrl = audio.src)
+    // audioUrl && (this.audioUrl = audioUrl);
     this.dialog.show()
     return new Promise((resolve, reject) => {
       this._resolve = resolve;
@@ -120,10 +127,10 @@ export class AudioRecorder extends LitElement {
     })
   }
 
-  private reset() {
+  public reset() {
     this._blob = undefined;
     this.audioUrl = undefined;
-    // this._thingId = undefined;
+    this.voice = undefined;
   }
 
 

@@ -30,6 +30,9 @@ export class AudiosManager {
   public async loadVoice (voice: Voice) {
     this.audios[voice.id] = new Audio(`./audios/${voice.id}.wav`)
   }
+  public async unloadVoice (voice: Voice) {
+    delete this.audios[voice.id]
+  }
 
   public async sendVoiceAudio (voice: Voice, blob: Blob) {
     const formData = new FormData
@@ -38,6 +41,13 @@ export class AudiosManager {
       method: 'POST',
       body: formData
     })
+  }
+
+  public async removeVoiceAudio (voice: Voice) {
+    await fetch(`/audio/${voice.id}`, {
+      method: 'DELETE'
+    })
+    this.unloadVoice(voice)
   }
 }
 

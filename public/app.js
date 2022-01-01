@@ -1642,6 +1642,9 @@ class AudiosManager {
     async loadVoice(voice) {
         this.audios[voice.id] = new Audio(`./audios/${voice.id}.wav`);
     }
+    async unloadVoice(voice) {
+        delete this.audios[voice.id];
+    }
     async sendVoiceAudio(voice, blob) {
         const formData = new FormData;
         formData.append('audio', blob);
@@ -1650,8 +1653,26 @@ class AudiosManager {
             body: formData
         });
     }
+    async removeVoiceAudio(voice) {
+        await fetch(`/audio/${voice.id}`, {
+            method: 'DELETE'
+        });
+        this.unloadVoice(voice);
+    }
 }
 window.audiosManager = new AudiosManager;
+
+/**
+ * @license
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */const r=o=>void 0===o.strings,f={},s=(o,i=f)=>o._$AH=i;
+
+/**
+ * @license
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */const l=e(class extends i$1{constructor(r$1){if(super(r$1),r$1.type!==t.PROPERTY&&r$1.type!==t.ATTRIBUTE&&r$1.type!==t.BOOLEAN_ATTRIBUTE)throw Error("The `live` directive is not allowed on child or event bindings");if(!r(r$1))throw Error("`live` bindings can only contain a single expression")}render(r){return r}update(i,[t$1]){if(t$1===b||t$1===T)return t$1;const o=i.element,l=i.name;if(i.type===t.PROPERTY){if(t$1===o[l])return b}else if(i.type===t.BOOLEAN_ATTRIBUTE){if(!!t$1===o.hasAttribute(l))return b}else if(i.type===t.ATTRIBUTE&&o.getAttribute(l)===t$1+"")return b;return s(i),t$1}});
 
 /**
  * @license
@@ -5313,18 +5334,6 @@ var MDCTextFieldFoundation$1 = MDCTextFieldFoundation;
 
 /**
  * @license
- * Copyright 2020 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */const r=o=>void 0===o.strings,f={},s=(o,i=f)=>o._$AH=i;
-
-/**
- * @license
- * Copyright 2020 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */const l=e(class extends i$1{constructor(r$1){if(super(r$1),r$1.type!==t.PROPERTY&&r$1.type!==t.ATTRIBUTE&&r$1.type!==t.BOOLEAN_ATTRIBUTE)throw Error("The `live` directive is not allowed on child or event bindings");if(!r(r$1))throw Error("`live` bindings can only contain a single expression")}render(r){return r}update(i,[t$1]){if(t$1===b||t$1===T)return t$1;const o=i.element,l=i.name;if(i.type===t.PROPERTY){if(t$1===o[l])return b}else if(i.type===t.BOOLEAN_ATTRIBUTE){if(!!t$1===o.hasAttribute(l))return b}else if(i.type===t.ATTRIBUTE&&o.getAttribute(l)===t$1+"")return b;return s(i),t$1}});
-
-/**
- * @license
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -5954,13 +5963,14 @@ let AudioRecorder = class AudioRecorder extends s$1 {
         var _a;
         return p `
     <mwc-dialog heading="Record voice" escapeKeyAction="" scrimClickAction="">
-      <mwc-textfield label="title" value=${(_a = this.voice) === null || _a === void 0 ? void 0 : _a.title}
-        @keyup=${e => this.voice.title = e.target.value}></mwc-textfield>
+      <mwc-textfield label="title" value=${l((_a = this.voice) === null || _a === void 0 ? void 0 : _a.title)}
+        @click=${(e) => { if (e.target.value === 'Untitled Audio')
+            e.target.select(); }}></mwc-textfield>
+
       <div style="text-align:center">
         <mwc-icon-button icon=${!this.recording ? 'mic' : 'fiber_manual_record'}
           style="color:${!this.recording ? 'black' : 'red'};--mdc-icon-size:44px;--mdc-icon-button-size:72px;margin:24px;"
-          @click=${() => this.toggleRecording()}
-          dialogInitialFocus></mwc-icon-button>
+          @click=${() => this.toggleRecording()}></mwc-icon-button>
 
         ${this.audioUrl ? p `
         <audio src=${this.audioUrl} controls style="display:block;margin-top:18px"></audio>
@@ -5971,7 +5981,7 @@ let AudioRecorder = class AudioRecorder extends s$1 {
         @click=${() => this.onDialogDismiss()}>cancel</mwc-button>
       <mwc-button unelevated slot="primaryAction"
         ?disabled=${!this.audioUrl}
-        @click=${() => this.onDialogAccept()}>add</mwc-button>
+        @click=${() => this.onDialogAccept()}>save</mwc-button>
     </mwc-dialog>
     `;
     }
@@ -5979,14 +5989,15 @@ let AudioRecorder = class AudioRecorder extends s$1 {
         // Reset before closing
         this.dialog.close();
         this._reject();
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // this.reset()
+        // await new Promise(resolve => setTimeout(resolve, 500))
         if (this._mediaRecorder && this._mediaRecorder.state === 'recording') {
             this._mediaRecorder.stop();
         }
-        this.reset();
     }
     onDialogAccept() {
         // We should send the file to the back
+        this.voice.title = this.titleField.value;
         this.dialog.close();
         this._resolve(this.voice);
     }
@@ -6020,6 +6031,10 @@ let AudioRecorder = class AudioRecorder extends s$1 {
     }
     open(voice) {
         this.voice = voice;
+        // Trying to find the audio
+        const audio = window.audiosManager.getVoiceAudio(voice);
+        audio && (this.audioUrl = audio.src);
+        // audioUrl && (this.audioUrl = audioUrl);
         this.dialog.show();
         return new Promise((resolve, reject) => {
             this._resolve = resolve;
@@ -6029,7 +6044,7 @@ let AudioRecorder = class AudioRecorder extends s$1 {
     reset() {
         this._blob = undefined;
         this.audioUrl = undefined;
-        // this._thingId = undefined;
+        this.voice = undefined;
     }
     get blob() {
         return this._blob;
@@ -6052,6 +6067,9 @@ __decorate([
 __decorate([
     i$2('mwc-dialog')
 ], AudioRecorder.prototype, "dialog", void 0);
+__decorate([
+    i$2('mwc-textfield[label=title]')
+], AudioRecorder.prototype, "titleField", void 0);
 AudioRecorder = __decorate([
     n('audio-recorder')
 ], AudioRecorder);
@@ -6069,17 +6087,34 @@ let VoiceStrip = class VoiceStrip extends s$1 {
     <mwc-icon-button icon=${!this._playing ? 'play_arrow' : 'stop'}
       @click=${() => this.togglePlay()}></mwc-icon-button>
     <span style="padding-left:12px;flex:1;">${(_a = this.voice) === null || _a === void 0 ? void 0 : _a.title}</span>
+    <mwc-icon-button icon="edit"
+      @click=${() => this.onEditClick()}></mwc-icon-button>
     <mwc-icon-button icon="delete"
       @click=${() => this.onDeleteClick()}></mwc-icon-button>
     `;
+    }
+    async onEditClick() {
+        try {
+            await window.app.editSpeech(this.voice);
+            this.requestUpdate();
+        }
+        catch (e) {
+        }
     }
     onDeleteClick() {
         const confirmed = confirm('Are you sure?');
         if (confirmed) {
             window.dataManager.removeVoice(this.voice);
             window.dataManager.saveRemote();
+            // Needa delete the remote audio file as well
+            window.audiosManager.removeVoiceAudio(this.voice);
             window.app.requestUpdate();
         }
+    }
+    updated(_changedProperties) {
+        // this.audio.onended = () => {
+        //   this.stop()
+        // }
     }
     togglePlay() {
         if (!this._playing) {
@@ -6092,6 +6127,12 @@ let VoiceStrip = class VoiceStrip extends s$1 {
     play() {
         this.audio.play();
         this._playing = true;
+        return new Promise(resolve => {
+            this.audio.onended = () => {
+                this.stop();
+                resolve(null);
+            };
+        });
     }
     stop() {
         this.audio.pause();
@@ -6160,21 +6201,39 @@ let AppContainer = class AppContainer extends s$1 {
         })}
     `;
     }
-    async onAddSpeechClick() {
-        // Construct a new speech
-        const voice = window.dataManager.addVoice(this.collection);
+    async editSpeech(voice) {
         try {
             await window.audioRecorder.open(voice);
             // Save the informations remotely
             window.dataManager.saveRemote();
-            // We also need to save the file
-            await window.audiosManager.sendVoiceAudio(voice, window.audioRecorder.blob);
+            // We also need to save the file if there is a record
+            if (window.audioRecorder.blob)
+                await window.audiosManager.sendVoiceAudio(voice, window.audioRecorder.blob);
             window.audiosManager.loadVoice(voice);
         }
         catch (e) {
-            console.log('cancel');
+            throw e;
         }
-        this.requestUpdate();
+        // this.requestUpdate()
+    }
+    async onAddSpeechClick() {
+        // Construct a new speech
+        // Or reuse if there is one in the recorder form
+        let voice;
+        if (window.audioRecorder.voice) {
+            voice = window.dataManager.addVoice(this.collection, window.audioRecorder.voice);
+        }
+        else {
+            voice = window.dataManager.addVoice(this.collection);
+        }
+        try {
+            await this.editSpeech(voice);
+            window.audioRecorder.reset();
+            this.requestUpdate();
+        }
+        catch (e) {
+            window.dataManager.removeVoice(voice);
+        }
     }
     processLocation() {
         const hash = window.location.hash.slice(1);
