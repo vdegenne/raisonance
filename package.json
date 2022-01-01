@@ -3,7 +3,9 @@
     "koa": "^2.13.4",
     "koa-body": "^4.2.0",
     "koa-router": "^10.1.1",
-    "koa-static": "^5.0.0"
+    "koa-static": "^5.0.0",
+    "make-cert": "^1.2.1",
+    "open": "^8.4.0"
   },
   "scripts": {
     "build": "rollup -c --environment minify,bundle",
