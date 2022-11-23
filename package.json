@@ -20,7 +20,7 @@
     "@material/mwc-textfield": "^0.25.3",
     "@rollup/plugin-node-resolve": "^13.1.2",
     "@rollup/plugin-typescript": "^8.3.0",
-    "browser-sync": "^2.27.7",
+    "browser-sync": "^2.27.10",
     "lit": "^2.0.2",
     "rollup": "^2.62.0",
     "tslib": "^2.3.1",
